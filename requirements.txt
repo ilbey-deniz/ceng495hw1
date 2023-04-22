@@ -4,3 +4,4 @@ flask_socketio
 pyJWT==1.7.1
 bcrypt
 datetime
+gunicorn

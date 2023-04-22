@@ -71,6 +71,13 @@ def get_products():
     else:
         emit("get products answer", {"status": "error", "message": "noProducts"})
     
+@socketio.on("get product")
+def get_product(msg):
+    product = get_product_by_id(db, msg)
+    if product:
+        emit("get product answer", product)
+    else:
+        emit("get product answer", {"status": "error", "message": "noProduct"})
 
 
 if __name__ == "__main__":

@@ -53,3 +53,8 @@ def get_all_reviews(db):
     # Get all rewiews from the database
     cursor = db[REVIEWS].find({})
     return parse_json(cursor)
+
+def get_product_by_id(db, id):
+    # Get the product from the database
+    cursor = db[PRODUCTS].find_one({"_id": ObjectId(id)})
+    return parse_json(cursor)

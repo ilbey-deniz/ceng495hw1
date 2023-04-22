@@ -21,9 +21,9 @@
                         </v-img>
 
                         <v-card-actions>
-                            <v-btn size="small" color="surface-variant" variant="text" @click="gotoProduct(card)">View Product</v-btn>
-                            <v-spacer></v-spacer>
-                            <v-btn size="small" color="surface-variant" variant="text" icon="mdi-heart"></v-btn>
+                            <router-link :to="{ name: 'ProductView',params: { id: card._id.$oid} }">
+                                <v-btn size="small" color="surface-variant" variant="text">View Product</v-btn>
+                            </router-link>
 
                         </v-card-actions>
                     </v-card>
@@ -53,7 +53,6 @@ export default {
     mounted() {
         this.getProducts();
         this.socket.on('get products answer', (response) => {
-            console.log(response)
             this.products = response
         });
     },
@@ -61,9 +60,10 @@ export default {
         getProducts(){
             this.socket.emit('get products');
         },
-        gotoProduct(product){
-            this.$router.push({ name: 'ProductView', props:product, params: { id: product._id.$oid } });
-        }
+    },
+    unmounted() {
+        this.socket.off('get products answer')
+        this.socket.disconnect()
     }
 }
 </script>

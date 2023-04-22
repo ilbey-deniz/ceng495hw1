@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, Response, render_template
+from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from functools import wraps
 from db import *
@@ -61,6 +61,16 @@ def register(msg):
     if not user:
         add_user(db, msg["username"], msg["password"])
         emit("register answer", {"status": "success", "message": "userCreated"})
+
+
+@socketio.on("get products")
+def get_products():
+    products = get_all_products(db)
+    if products:
+        emit("get products answer", products)
+    else:
+        emit("get products answer", {"status": "error", "message": "noProducts"})
+    
 
 
 if __name__ == "__main__":

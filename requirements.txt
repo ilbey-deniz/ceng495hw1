@@ -1,3 +1,6 @@
 flask
 pymongo
 flask_socketio
+pyJWT==1.7.1
+bcrypt
+datetime

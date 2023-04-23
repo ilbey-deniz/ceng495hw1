@@ -136,9 +136,12 @@ export default {
             this.$router.push("/login");
         }
         let parsed_token = this.parseJwt(this.token);
-        this.socket.emit("get user", parsed_token["sub"]);
-        this.socket.on('get user answer', (response) => {
-            this.$router.push("/login");
+        this.socket.emit("is admin", parsed_token["sub"]);
+        this.socket.on('is admin answer', (response) => {
+            console.log(response)
+            if(!response){
+                this.$router.push("/login");
+            }
         });
     },
     mounted() {

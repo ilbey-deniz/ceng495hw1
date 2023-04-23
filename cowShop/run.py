@@ -149,6 +149,14 @@ def submit_rating(msg):
         add_rating(db, msg["done_by"], msg)
         emit("submit rating answer", {"status": "success", "message": "reviwAdded"})
 
+@socketio.on("is admin")
+def is_admin(msg):
+    user = get_user_by_id(db, msg)
+    if user:
+        emit("is admin answer", user["is_admin"])
+    else:
+        emit("is admin answer", False)
+
 @socketio.on("get user reviews")
 def user_reviews(msg):
     reviews = get_review_by_user(db, msg)

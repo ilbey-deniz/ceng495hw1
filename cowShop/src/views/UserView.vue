@@ -38,7 +38,16 @@ export default {
             ratings: [],
             avg_rating: 0,
             socket: null,
+            user_id: "",
         }
+    },
+    beforeMount() {
+        if (localStorage.getItem("token") == null)
+            this.$router.push("/login")
+        this.user_id = this.parseJwt(localStorage.getItem("token"))["sub"]
+        console.log(this.user_id)
+        if (this.user_id != this.$route.params.id)
+            this.$router.push("/login")
     },
     mounted() {
         this.socket = io();
@@ -56,7 +65,7 @@ export default {
             this.avgRating()
         });
         this.socket.on("delete review answer", (response) => {
-            if(response.status == "success")
+            if (response.status == "success")
                 this.$router.go()
         });
     },
@@ -77,6 +86,15 @@ export default {
                 sum += this.ratings[i].rating
             }
             this.avg_rating = this.ratings.length ? sum / this.ratings.length : 0
+        },
+        parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+
+            return JSON.parse(jsonPayload);
         }
     },
 }

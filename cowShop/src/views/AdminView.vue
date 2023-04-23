@@ -45,7 +45,6 @@
                     <v-text-field v-model="product['description']" label="Description"></v-text-field>
                     <v-text-field v-model="product['price']" label="Price"></v-text-field>
                     <v-text-field v-model="product['image']" label="Image src"></v-text-field>
-                    <v-text-field v-model="product['seller']" label="Seller"></v-text-field>
                     <v-text-field v-model="spec['RAM']" label="RAM"></v-text-field>
                     <v-text-field v-model="spec['Screen Size']" label="Screen Size"></v-text-field>
                     <v-text-field v-model="spec['Storage']" label="Storage"></v-text-field>
@@ -55,7 +54,6 @@
                     <v-text-field v-model="product['description']" label="Description"></v-text-field>
                     <v-text-field v-model="product['price']" label="Price"></v-text-field>
                     <v-text-field v-model="product['image']" label="Image src"></v-text-field>
-                    <v-text-field v-model="product['seller']" label="Seller"></v-text-field>
                     <v-text-field v-model="product['color']" label="Color"></v-text-field>
                     <v-text-field v-model="product['size']" label="Size"></v-text-field>
                 </v-form>
@@ -64,7 +62,6 @@
                     <v-text-field v-model="product['description']" label="Description"></v-text-field>
                     <v-text-field v-model="product['price']" label="Price"></v-text-field>
                     <v-text-field v-model="product['image']" label="Image src"></v-text-field>
-                    <v-text-field v-model="product['seller']" label="Seller"></v-text-field>
 
                 </v-form>
                 <v-form v-if="product_type == 'Monitors'">
@@ -72,7 +69,6 @@
                     <v-text-field v-model="product['description']" label="Description"></v-text-field>
                     <v-text-field v-model="product['price']" label="Price"></v-text-field>
                     <v-text-field v-model="product['image']" label="Image src"></v-text-field>
-                    <v-text-field v-model="product['seller']" label="Seller"></v-text-field>
                     <v-text-field v-model="spec['Screen Size']" label="Screen Size"></v-text-field>
                 </v-form>
                 <v-form v-if="product_type == 'Computer Components'">
@@ -80,7 +76,6 @@
                     <v-text-field v-model="product['description']" label="Description"></v-text-field>
                     <v-text-field v-model="product['price']" label="Price"></v-text-field>
                     <v-text-field v-model="product['image']" label="Image src"></v-text-field>
-                    <v-text-field v-model="product['seller']" label="Seller"></v-text-field>
                     <v-text-field v-model="spec['RAM']" label="RAM"></v-text-field>
 
                 </v-form>
@@ -114,16 +109,8 @@ export default {
             socket: null,
             new_product: {},
 
-            name: "",
-            description: "",
-            price: "",
-            image: "",
-            seller: "",
             spec: {},
             product: {},
-
-            color: "",
-            size: "",
 
             product_types: ["Consumer Electronics", "Clothing", "Snacks", "Monitors", "Computer Components"],
             product_type: ""
@@ -186,6 +173,7 @@ export default {
             else {
                 this.product.spec = this.spec
             }
+            this.product.seller=this.current_user_id
             this.socket.emit("add product", this.product);
             this.product = {}
             this.spec = {}

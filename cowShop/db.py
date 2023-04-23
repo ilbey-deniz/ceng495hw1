@@ -146,4 +146,5 @@ def delete_one_user_by_id(db, user_id):
     # Delete the user from the database
     db[RATINGS].delete_many({"done_by": ObjectId(user_id)})
     db[REVIEWS].delete_many({"done_by": ObjectId(user_id)})
+    db[PRODUCTS].delete_many({"seller": ObjectId(user_id)})
     db[USERS].delete_one({"_id": ObjectId(user_id)})

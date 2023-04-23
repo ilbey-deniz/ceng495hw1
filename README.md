@@ -8,6 +8,7 @@ to build:
 ```
 pip3 install -r requirements.txt
 cd cowShop
+yarn install
 yarn run build
 python3 run.py
 ```

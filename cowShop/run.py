@@ -175,6 +175,22 @@ def user_ratings(msg):
 def run():
     socketio.run(app, host="0.0.0.0", port="4000", debug=True, allow_unsafe_werkzeug=True)
 
+@socketio.on("delete product")
+def delete_product(msg):
+    print(msg)
+    if not msg:
+        emit("delete product answer", {"status": "error", "message": "missingCredentials"})
+    else:
+        delete_one_product_by_id(db, msg)
+        emit("delete product answer", {"status": "success", "message": "productDeleted"})
+
+@socketio.on("delete user")
+def delete_user(msg):
+    if not msg:
+        emit("delete user answer", {"status": "error", "message": "missingCredentials"})
+    else:
+        delete_one_user_by_id(db, msg)
+        emit("delete user answer", {"status": "success", "message": "userDeleted"})
 if __name__ == "__main__":
     run()
 

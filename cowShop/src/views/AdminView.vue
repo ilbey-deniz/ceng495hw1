@@ -13,7 +13,7 @@
                             <router-link :to="{ name: 'UserView', params: { id: product.seller.$oid } }">
                                 <v-btn size="small">View Seller</v-btn>
                             </router-link>
-                            <v-btn @click="deleteProduct(review.product_id)">
+                            <v-btn @click="deleteProduct(product._id.$oid)">
                                 <v-icon small>mdi-delete</v-icon>
                             </v-btn>
                         </template>
@@ -28,7 +28,7 @@
                             <router-link :to="{ name: 'UserView', params: { id: user._id.$oid } }">
                                 <v-btn size="small">View User</v-btn>
                             </router-link>
-                            <v-btn @click="deleteUser(user._id)">
+                            <v-btn v-if="current_user_id != user._id.$oid" @click="deleteUser(user._id.$oid)">
                                 <v-icon small>mdi-delete</v-icon>
                             </v-btn>
                         </template>
@@ -104,6 +104,7 @@ export default {
     data() {
         return {
             token: "",
+            current_user_id: "",
             addProductRules: [
                 v => !!v || 'Product type is required',
                 v => v == "Choose product type.." || 'Product type is required',
@@ -136,9 +137,9 @@ export default {
             this.$router.push("/login");
         }
         let parsed_token = this.parseJwt(this.token);
+        this.current_user_id = parsed_token["sub"];
         this.socket.emit("is admin", parsed_token["sub"]);
         this.socket.on('is admin answer', (response) => {
-            console.log(response)
             if(!response){
                 this.$router.push("/login");
             }
@@ -157,6 +158,12 @@ export default {
         this.socket.on("add product answer", (response) => {
             this.$router.go()
         });
+        this.socket.on("delete product answer", (response) => {
+            this.$router.go()
+        });
+        this.socket.on("delete user answer", (response) => {
+            this.$router.go()
+        });
     },
     methods: {
         getSeller(seller_id) {
@@ -165,9 +172,8 @@ export default {
                     return this.users[i].username
             }
         },
-        // TODO: implement deletions
         deleteProduct(product_id) {
-            this.socket.emit("delete product", product_id.$oid);
+            this.socket.emit("delete product", product_id);
         },
         deleteUser(user_id) {
             this.socket.emit("delete user", user_id);

@@ -135,3 +135,15 @@ def add_one_product(db, product):
         product["seller"] = ObjectId(product["seller"])
     # Insert the product into the database
     db[PRODUCTS].insert_one(product)
+
+def delete_one_product_by_id(db, product_id):
+    # Delete the product from the database
+    db[RATINGS].delete_many({"product_id": ObjectId(product_id)})
+    db[REVIEWS].delete_many({"product_id": ObjectId(product_id)})
+    db[PRODUCTS].delete_one({"_id": ObjectId(product_id)})
+
+def delete_one_user_by_id(db, user_id):
+    # Delete the user from the database
+    db[RATINGS].delete_many({"done_by": ObjectId(user_id)})
+    db[REVIEWS].delete_many({"done_by": ObjectId(user_id)})
+    db[USERS].delete_one({"_id": ObjectId(user_id)})

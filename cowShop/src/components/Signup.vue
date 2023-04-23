@@ -58,7 +58,7 @@ export default {
     this.socket.on("register answer", (data) => {
       if (data["status"] === "success") {
         localStorage.setItem("token", data["token"]);
-        this.$router.push("/");
+        this.$router.go("/");
       }
       else {
         if (data["message"] === "userExists") {

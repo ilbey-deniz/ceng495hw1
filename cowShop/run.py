@@ -6,6 +6,7 @@ import jwt
 import bcrypt
 from datetime import datetime, timedelta
 
+
 db = init_db()
 app = Flask(__name__,
             template_folder = "./dist",
@@ -35,6 +36,7 @@ def login(msg):
 
     if not msg or not msg["username"] or not msg["password"]:
         emit("login answer", {"status": "error", "message": "missingCredentials"})
+        return
 
     user = get_user(db, msg["username"])
 
@@ -43,25 +45,39 @@ def login(msg):
         return
 
     if check_password_hash(user["password"], msg["password"]):
-        token = jwt.encode({'sub': user["username"], 'exp': datetime.utcnow() + timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        token = jwt.encode({'sub': str(user["_id"]), 'exp': datetime.utcnow() + timedelta(minutes=30)}, app.config['SECRET_KEY'])
         return emit("login answer", {'status':"success", 'token': token.decode('UTF-8')})
 
-    return emit("login answer", {"status": "error", "message": "wrongPassword"})
+    emit("login answer", {"status": "error", "message": "wrongPassword"})
 
 @socketio.on("register")
 def register(msg):
     if not msg or not msg["username"] or not msg["password"]:
         emit("register answer", {"status": "error", "message": "missingCredentials"})
+        return
 
     user = get_user(db, msg["username"])
 
     if user:
         emit("register answer", {"status": "error", "message": "userExists"})
-
+        return
+    
     if not user:
-        add_user(db, msg["username"], msg["password"])
-        emit("register answer", {"status": "success", "message": "userCreated"})
+        pw_bytes = msg["password"].encode('utf-8')
+        salt = bcrypt.gensalt()
+        pw_hash = bcrypt.hashpw(pw_bytes, salt).decode('utf-8')
 
+        add_user(db, msg["username"], pw_hash, msg["is_admin"])
+        user = get_user(db, msg["username"])
+
+        token = jwt.encode({'sub': str(user["_id"]), 'exp': datetime.utcnow() + timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        emit("register answer", {"status": "success", "token": token.decode('UTF-8')})
+
+@socketio.on("add product")
+def add_product(msg):
+    if msg:
+        add_one_product(db, msg)
+        emit("add product answer", {"status": "success", "message": "productCreated"})
 
 @socketio.on("get products")
 def get_products():
@@ -86,23 +102,27 @@ def product_review(msg):
         emit("get product review answer", reviews)
     
 @socketio.on("get user")
-def get_user(msg):
+def get_user_id(msg):
     user = get_user_by_id(db, msg)
     if user:
         emit("get user answer", user["username"])
     else:
         emit("get user answer", {"status": "error", "message": "noUser"})
 
+@socketio.on("get users")
+def get_users():
+    users = get_all_users(db)
+    if users:
+        emit("get users answer", users)
+    else:
+        emit("get users answer", {})
+
 @socketio.on("submit review")
 def submit_review(msg):
     if not msg:
         emit("submit review answer", {"status": "error", "message": "missingCredentials"})
     else:
-        #TODO: user id from token
-        if "done_by" in msg:
-            add_review(db, msg["done_by"], msg)
-        else:
-            add_review(db, "6443d83576b3088c36a52d7e", msg)
+        add_review(db, msg["done_by"], msg)
         emit("submit review answer", {"status": "success", "message": "reviewAdded"})
 
 @socketio.on("delete review")
@@ -126,8 +146,7 @@ def submit_rating(msg):
     if not msg:
         emit("submit rating answer", {"status": "error", "message": "missingCredentials"})
     else:
-        #TODO: user id from token
-        add_rating(db, "6443d83576b3088c36a52d7e", msg)
+        add_rating(db, msg["done_by"], msg)
         emit("submit rating answer", {"status": "success", "message": "reviwAdded"})
 
 @socketio.on("get user reviews")

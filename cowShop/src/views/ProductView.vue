@@ -1,14 +1,5 @@
 <template>
     <div class="app">
-        <v-toolbar color="indigo" dark>
-            <v-app-bar-nav-icon></v-app-bar-nav-icon>
-
-            <v-toolbar-title>cowShop</v-toolbar-title>
-
-            <v-spacer></v-spacer>
-
-            <v-btn icon="mdi-magnify"></v-btn>
-        </v-toolbar>
         <v-container fluid>
             <v-row>
                 <v-col>
@@ -19,21 +10,19 @@
                     <v-card>
                         <v-card-title class="text-black" v-text="product.name"></v-card-title>
                         <v-card-text class="text-black" v-text="product.description"></v-card-text>
-                        
+
                         <v-card-text class="text-black" v-text="product.price + ' TL'"></v-card-text>
                         <v-card-text class="text-black">
-                            <router-link :to="{ name: 'UserView',params: { id: this.product.seller.$oid} }" v-text="'Seller: ' + seller"></router-link>
+                            <router-link :to="{ name: 'UserView', params: { id: this.product.seller.$oid } }"
+                                v-text="'Seller: ' + seller"></router-link>
                         </v-card-text>
-                        <v-card-text class="text-black" v-text="'Average rating: '+ this.avg_rating + '/5'"></v-card-text>
-                        <v-rating
-                            v-model="rating"
-                            bg-color="orange-lighten-1"
-                            color="blue"
-                            @input="submitRating"
-                        ></v-rating>
+                        <v-card-text class="text-black" v-text="'Average rating: ' + this.avg_rating + '/5'"></v-card-text>
+                        <v-rating v-model="rating" bg-color="orange-lighten-1" color="blue"
+                            @input="submitRating"></v-rating>
                         <v-list lines="one">
                             <v-subheader>Specs</v-subheader>
-                            <v-list-item v-for="(value, name) in product.spec" :title="name" :subtitle="value"></v-list-item>
+                            <v-list-item v-for="(value, name) in product.spec" :title="name"
+                                :subtitle="value"></v-list-item>
                         </v-list>
                         <v-card-text class="text-black" v-text="product.size"></v-card-text>
                         <v-card-text class="text-black" v-text="product.color"></v-card-text>
@@ -41,13 +30,15 @@
 
                     <v-list lines="two">
                         <v-subheader>Reviews</v-subheader>
-                        <v-list-item v-for="review in reviews" :key="review._id" :title="review.done_by_username" :subtitle="review.text"></v-list-item>
+                        <v-list-item v-for="review in reviews" :key="review._id" :title="review.done_by_username"
+                            :subtitle="review.text"></v-list-item>
                     </v-list>
                     <v-form @submit.prevent="submitReview" v-model="isFormValid">
-                        <v-text-field v-model="comment" :rules="commentRules" label="Make a review" variant="outlined"></v-text-field>
-                        <v-btn :disabled="!isFormValid" type="submit" color="primary" >ADD REVIEW</v-btn>
+                        <v-text-field v-model="comment" :rules="commentRules" label="Make a review"
+                            variant="outlined"></v-text-field>
+                        <v-btn :disabled="!isFormValid" type="submit" color="primary">ADD REVIEW</v-btn>
                     </v-form>
-                    
+
                 </v-col>
             </v-row>
         </v-container>
@@ -99,7 +90,7 @@ export default {
                 sum += ratings[i].rating
             }
             this.avg_rating = ratings.length ? sum / ratings.length : 0
-            this.rating= this.avg_rating
+            this.rating = this.avg_rating
 
         });
 
@@ -107,13 +98,11 @@ export default {
             if (response.status == "success") {
                 this.$router.go()
             }
-            console.log(response)
         });
 
         this.socket.on('submit rating answer', (response) => {
-            if(response.status == "success")
+            if (response.status == "success")
                 this.$router.go()
-            console.log(response)
         });
     },
     unmounted() {
@@ -121,16 +110,36 @@ export default {
     },
     methods: {
         submitReview() {
+            if (localStorage.getItem("token") == null) {
+                alert("You must login to make a review")
+                return
+            }
+
             this.socket.emit("submit review", {
                 product_id: this.$route.params.id,
                 text: this.comment,
+                done_by: this.parseJwt(localStorage.getItem("token"))["sub"]
             });
         },
         submitRating() {
+            if (localStorage.getItem("token") == null) {
+                alert("You must be logged in to rate")
+                return
+            }
             this.socket.emit("submit rating", {
+                done_by: this.parseJwt(localStorage.getItem("token"))["sub"],
                 product_id: this.$route.params.id,
                 rating: this.rating,
             });
+        },
+        parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+
+            return JSON.parse(jsonPayload);
         }
     }
 }

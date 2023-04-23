@@ -26,11 +26,12 @@ def init_db():
     db = client.get_database(DB)
     return db
 
-def add_user(db, username, password):
+def add_user(db, username, password, is_admin):
     # Create a new user
     user = {
         "username": username,
-        "password": password
+        "password": password,
+        "is_admin": is_admin
     }
     # Insert the user into the database
     db[USERS].insert_one(user)
@@ -128,3 +129,9 @@ def get_product_ratings(db, id):
     # Get the product from the database
     cursor = db[RATINGS].find({"product_id": ObjectId(id)})
     return parse_json(cursor)
+
+def add_one_product(db, product):
+    if(type(product["seller"]) != ObjectId):
+        product["seller"] = ObjectId(product["seller"])
+    # Insert the product into the database
+    db[PRODUCTS].insert_one(product)

@@ -1,16 +1,5 @@
 <template>
     <v-card class="mx-auto">
-
-        <v-toolbar color="indigo" dark>
-            <v-app-bar-nav-icon></v-app-bar-nav-icon>
-
-            <v-toolbar-title>cowShop</v-toolbar-title>
-
-            <v-spacer></v-spacer>
-
-            <v-btn icon="mdi-magnify"></v-btn>
-        </v-toolbar>
-
         <v-container fluid>
             <v-row dense>
                 <v-col v-for="card in products" :key="card.name" :cols="card.flex">
@@ -40,11 +29,6 @@ export default {
     name: "Home",
     data: () => ({
         socket: null,
-        cards: [
-            { title: 'Pre-fab homes', src: 'https://cdn.vuetifyjs.com/images/cards/house.jpg', flex: 6 },
-            { title: 'Favorite road trips', src: 'https://cdn.vuetifyjs.com/images/cards/road.jpg', flex: 6 },
-            { title: 'Best airlines', src: 'https://cdn.vuetifyjs.com/images/cards/plane.jpg', flex: 6 },
-        ],
         products : []
     }),
     beforeMount() {

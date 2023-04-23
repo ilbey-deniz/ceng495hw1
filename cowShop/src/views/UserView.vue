@@ -1,14 +1,5 @@
 <template>
     <div class="app">
-        <v-toolbar color="indigo" dark>
-            <v-app-bar-nav-icon></v-app-bar-nav-icon>
-
-            <v-toolbar-title>cowShop</v-toolbar-title>
-
-            <v-spacer></v-spacer>
-
-            <v-btn icon="mdi-magnify"></v-btn>
-        </v-toolbar>
         <h1>User: {{ this.username }}</h1>
         <h2>Average Rating: {{ this.avg_rating.toFixed(2) }}/5</h2>
         <v-container fluid>
@@ -68,7 +59,6 @@ export default {
             if(response.status == "success")
                 this.$router.go()
         });
-        this
     },
     unmounted() {
         this.socket.disconnect();

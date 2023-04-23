@@ -1,0 +1,93 @@
+<template>
+    <div class="app">
+        <v-toolbar color="indigo" dark>
+            <v-app-bar-nav-icon></v-app-bar-nav-icon>
+
+            <v-toolbar-title>cowShop</v-toolbar-title>
+
+            <v-spacer></v-spacer>
+
+            <v-btn icon="mdi-magnify"></v-btn>
+        </v-toolbar>
+        <h1>User: {{ this.username }}</h1>
+        <h2>Average Rating: {{ this.avg_rating.toFixed(2) }}/5</h2>
+        <v-container fluid>
+            <v-row>
+                <v-col>
+                    <v-list lines="two">
+                        <v-subheader>Reviews</v-subheader>
+                        <v-list-item v-for="review in reviews" :key="review._id" :title="review.done_by_username"
+                            :subtitle="review.text">
+                            <template v-slot:append>
+                                <router-link :to="{ name: 'ProductView', params: { id: review.product_id.$oid } }">
+                                    <v-btn size="small">View Product</v-btn>
+                                </router-link>
+                                <v-btn @click="deleteReview(review.product_id)">
+                                    <v-icon small>mdi-delete</v-icon>
+                                </v-btn>
+                            </template>
+                        </v-list-item>
+                    </v-list>
+                </v-col>
+            </v-row>
+        </v-container>
+
+    </div>
+</template>
+
+<script>
+import { io } from "socket.io-client";
+
+export default {
+    name: "UserView",
+    data() {
+        return {
+            username: "",
+            reviews: [],
+            ratings: [],
+            avg_rating: 0,
+            socket: null,
+        }
+    },
+    mounted() {
+        this.socket = io();
+        this.socket.emit("get user", this.$route.params.id);
+        this.socket.on('get user answer', (response) => {
+            this.username = response
+        });
+        this.socket.emit("get user reviews", this.$route.params.id);
+        this.socket.on('get user reviews answer', (response) => {
+            this.reviews = response
+        });
+        this.socket.emit("get user ratings", this.$route.params.id);
+        this.socket.on('get user ratings answer', (response) => {
+            this.ratings = response
+            this.avgRating()
+        });
+        this.socket.on("delete review answer", (response) => {
+            if(response.status == "success")
+                this.$router.go()
+        });
+        this
+    },
+    unmounted() {
+        this.socket.disconnect();
+    },
+    methods: {
+        deleteReview(product_id) {
+            let req = {
+                done_by: this.$route.params.id,
+                product_id: product_id
+            }
+            this.socket.emit("delete review", req);
+        },
+        avgRating() {
+            let sum = 0
+            for (let i = 0; i < this.ratings.length; i++) {
+                sum += this.ratings[i].rating
+            }
+            this.avg_rating = this.ratings.length ? sum / this.ratings.length : 0
+        }
+    },
+}
+</script>
